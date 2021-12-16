@@ -124,7 +124,8 @@ def main():
     # Example query
     cur = conn.cursor()
     cur.execute("SELECT * FROM 'office_supply_sales'")
-    print(cur.fetchall())
+    for row in cur.fetchall():
+        print(row)
 
     cur.close()
     conn.close()
