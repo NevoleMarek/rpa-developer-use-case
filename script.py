@@ -27,8 +27,23 @@ def scrape_table(URL):
         )[0]
     return df
 
-def calculate_discount():
-    pass
+def total_discount(row):
+    region_unit_discount = 0.23 if row['Region'] == 'Central' else 0.12
+    discount = row['Units'] * region_unit_discount
+    if row['Units'] > 50:
+        discount += 7.2
+    return discount
+
+def calculate_discount(df):
+    """
+    Add TotalDiscount and FinalPrice columns to dataframe passed as 'df'.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+    """
+    df['TotalDiscount'] = df.apply(total_discount, axis=1)
+    df['FinalPrice'] = df['Total'] - df['TotalDiscount']
 
 def create_database_from_dataframe():
     pass
@@ -37,6 +52,7 @@ def main():
     URL = 'https://www.contextures.com/xlsampledata01.html'
 
     df = scrape_table(URL)
+    calculate_discount(df)
 
 if __name__ == '__main__':
     main()
