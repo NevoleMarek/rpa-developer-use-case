@@ -33,7 +33,7 @@ def scrape_table(URL):
 def total_discount(row):
     region_unit_discount = 0.23 if row['Region'] == 'Central' else 0.12
     discount = row['Units'] * region_unit_discount
-    if row['Units'] > 50:
+    if row['Region'] == 'East' and row['Units'] > 50:
         discount += 7.2
     return discount
 
