@@ -30,9 +30,9 @@ If executed correctly the script should output `database.db` sqlite3 database fi
 
 ## Example Output
 
-![stdout](C:\Users\mnkh\Desktop\foxconn\rpa_developer_use_case\stdout.png)
+![stdout](stdout.png)
 
-![sqlite](C:\Users\mnkh\Desktop\foxconn\rpa_developer_use_case\sqlite.png)
+![sqlite](sqlite.png)
 
 
 
