@@ -1,3 +1,6 @@
+import datetime
+import sqlite3
+
 import pandas as pd
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -45,14 +48,86 @@ def calculate_discount(df):
     df['TotalDiscount'] = df.apply(total_discount, axis=1)
     df['FinalPrice'] = df['Total'] - df['TotalDiscount']
 
-def create_database_from_dataframe():
-    pass
+def create_connection():
+    try:
+        return sqlite3.connect(
+            'database.db',
+            detect_types=sqlite3.PARSE_DECLTYPES|sqlite3.PARSE_COLNAMES
+        )
+    except Exception as e:
+        raise e
+
+def create_table(cur):
+    cur.execute(
+        """
+        CREATE TABLE IF NOT EXISTS 'office_supply_sales'(
+            Region TEXT,
+            Rep TEXT,
+            Item TEXT,
+            Units INTEGER,
+            [Total discount] REAL,
+            [Final Price] REAL,
+            [Creation date] timestamp,
+            OrderDate date
+        )
+        """
+    )
+
+def create_tuple_from_row(row):
+    return (
+        row.Region,
+        row.Rep,
+        row.Item,
+        row.Units,
+        row.TotalDiscount,
+        row.FinalPrice,
+        datetime.datetime.now(),
+        row.OrderDate.date()
+    )
+
+def dataframe_to_qmark(df):
+    return [create_tuple_from_row(row) for row in df.itertuples(index=False)]
+
+def insert_dataframe(cur, df):
+    insert_query = "INSERT INTO 'office_supply_sales' VALUES (?, ?, ?, ?, ?, ?, ?, ?);"
+    qmark_list = dataframe_to_qmark(df)
+    cur.executemany(insert_query, qmark_list)
+
+def create_database_from_dataframe(df):
+    """
+    Create database and table. Fill the table with data from 'df' dataframe.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+
+    Returns
+    -------
+    sqlite3.Connection
+        Connection object of SQLite3 database.
+    """
+    conn = create_connection()
+    cur = conn.cursor()
+    create_table(cur)
+    insert_dataframe(cur, df)
+    conn.commit()
+    cur.close()
+    return conn
 
 def main():
     URL = 'https://www.contextures.com/xlsampledata01.html'
 
     df = scrape_table(URL)
     calculate_discount(df)
+    conn = create_database_from_dataframe(df)
+
+    # Example query
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM 'office_supply_sales'")
+    print(cur.fetchall())
+
+    cur.close()
+    conn.close()
 
 if __name__ == '__main__':
     main()
